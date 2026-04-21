@@ -1,11 +1,12 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "bun install && bunx prisma generate && bun run build"
+buildCommand = "npm ci && npx prisma generate && npm run build"
+
 [phases.setup]
 nixPkgs = ["nodejs_22"]
 
 [deploy]
-startCommand = "bun server/index.ts"
+startCommand = "npm run server"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
