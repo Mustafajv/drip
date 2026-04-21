@@ -1,8 +1,13 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +30,14 @@ app.use(express.json());
 // Health check
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Serve static files from Vite build output
+app.use(express.static(path.join(__dirname, "../dist")));
+
+// Catch-all — serves index.html for client-side routing
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(__dirname, "../dist/index.html"));
 });
 
 app.listen(PORT, () => {
