@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.railpack.com",
+    "packages": {
+        "node": "22"
+    },
+    "steps": {
+        "build": {
+            "commands": [
+                "...",
+                "npx prisma generate",
+                "npm run build"
+            ]
+        }
+    },
+    "deploy": {
+        "startCommand": "npx tsx server/index.ts"
+    }
+}
