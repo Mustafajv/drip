@@ -84,7 +84,7 @@ export default function AuthPage() {
     setError(null);
     await signIn.social({
       provider: 'google',
-      callbackURL: 'http://localhost:5173/',
+      callbackURL: '/',
     });
   };
 
