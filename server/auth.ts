@@ -30,5 +30,8 @@ export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:5173",
     "http://localhost:5174",
+    ...(process.env.RAILWAY_PUBLIC_DOMAIN
+      ? [`https://${process.env.RAILWAY_PUBLIC_DOMAIN}`]
+      : []),
   ],
 });
