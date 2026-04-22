@@ -45,7 +45,7 @@ app.get("{*splat}", (_req, res) => {
   res.sendFile(path.join(__dirname, "../dist/index.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`🔐 Auth server running on http://localhost:${PORT}`);
-  console.log(`   Auth endpoint: http://localhost:${PORT}/api/auth`);
+app.listen(Number(PORT), "0.0.0.0", () => {
+  console.log(`🔐 Auth server running on http://0.0.0.0:${PORT}`);
+  console.log(`   Auth endpoint: http://0.0.0.0:${PORT}/api/auth`);
 });
