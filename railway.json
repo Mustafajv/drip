@@ -8,6 +8,7 @@
             "commands": [
                 "...",
                 "npx prisma generate",
+                "rm -rf dist",
                 "npm run build"
             ]
         }
