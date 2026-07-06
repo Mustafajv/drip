@@ -7,7 +7,15 @@ import { PrismaClient } from "../generated/prisma/client.js";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
+const publicBaseURL =
+  process.env.BETTER_AUTH_URL ??
+  (process.env.RAILWAY_PUBLIC_DOMAIN
+    ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+    : "http://localhost:3000");
+
 export const auth = betterAuth({
+  baseURL: publicBaseURL,
+
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
@@ -26,8 +34,6 @@ export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:5173",
     "http://localhost:5174",
-    ...(process.env.RAILWAY_PUBLIC_DOMAIN
-      ? [`https://${process.env.RAILWAY_PUBLIC_DOMAIN}`]
-      : []),
+    publicBaseURL,
   ],
 });
