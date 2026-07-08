@@ -50,7 +50,7 @@ export default function CheckoutPage() {
         ...data,
         paymentMethod,
       });
-      navigate('/');
+      navigate('/account');
     } catch {
       // Error handled by mutation
     }

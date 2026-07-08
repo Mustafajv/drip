@@ -5,6 +5,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth.js";
+import productsRouter from "./routes/products.js";
+import ordersRouter from "./routes/orders.js";
+import { seedInitialProducts } from "./product-seed.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,6 +35,10 @@ app.all("/api/auth/{*splat}", toNodeHandler(auth));
 // JSON parsing for any other routes
 app.use(express.json());
 
+// Store API routes
+app.use("/api", productsRouter);
+app.use("/api", ordersRouter);
+
 // Health check
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
@@ -44,6 +51,14 @@ app.use(express.static(path.join(__dirname, "../dist")));
 app.get("{*splat}", (_req, res) => {
   res.sendFile(path.join(__dirname, "../dist/index.html"));
 });
+
+app.use((err: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+  void next;
+  console.error(err);
+  res.status(500).json({ error: "Internal server error" });
+});
+
+await seedInitialProducts();
 
 app.listen(Number(PORT), "0.0.0.0", () => {
   console.log(`🔐 Auth server running on http://0.0.0.0:${PORT}`);

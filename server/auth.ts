@@ -1,11 +1,7 @@
 import "dotenv/config";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../generated/prisma/client.js";
-
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter });
+import { prisma } from "./db.js";
 
 const publicBaseURL =
   process.env.BETTER_AUTH_URL ??
@@ -15,6 +11,17 @@ const publicBaseURL =
 
 export const auth = betterAuth({
   baseURL: publicBaseURL,
+
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        input: false,
+        returned: true,
+        defaultValue: "CUSTOMER",
+      },
+    },
+  },
 
   database: prismaAdapter(prisma, {
     provider: "postgresql",

@@ -1,6 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
-import { getProducts, getProductById, getRelatedProducts } from '@/services/api';
-import type { ProductFilters } from '@/types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  createProduct,
+  deleteProduct,
+  getProductById,
+  getProducts,
+  getRelatedProducts,
+  updateProduct,
+} from '@/services/api';
+import type { Product, ProductFilters } from '@/types';
 
 export function useProducts(filters?: Partial<ProductFilters>) {
   return useQuery({
@@ -23,4 +30,29 @@ export function useRelatedProducts(productId: string) {
     queryFn: () => getRelatedProducts(productId),
     enabled: !!productId,
   });
+}
+
+export function useProductAdminMutations() {
+  const queryClient = useQueryClient();
+
+  const invalidateProducts = () => {
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['product'] });
+    queryClient.invalidateQueries({ queryKey: ['relatedProducts'] });
+  };
+
+  return {
+    createProduct: useMutation({
+      mutationFn: (product: Omit<Product, 'id'>) => createProduct(product),
+      onSuccess: invalidateProducts,
+    }),
+    updateProduct: useMutation({
+      mutationFn: (product: Product) => updateProduct(product),
+      onSuccess: invalidateProducts,
+    }),
+    deleteProduct: useMutation({
+      mutationFn: (productId: string) => deleteProduct(productId),
+      onSuccess: invalidateProducts,
+    }),
+  };
 }

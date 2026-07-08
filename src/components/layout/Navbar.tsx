@@ -112,6 +112,31 @@ export default function Navbar() {
                     {session.user.email}
                   </p>
                 </div>
+                <Link
+                  to="/account"
+                  onClick={() => setShowDropdown(false)}
+                  className="block w-full px-4 py-3 text-left text-xs uppercase tracking-widest text-neutral-400 transition-colors hover:bg-neutral-800/50 hover:text-white"
+                >
+                  Account
+                </Link>
+                {session.user.role === 'ADMIN' && (
+                  <>
+                    <Link
+                      to="/admin"
+                      onClick={() => setShowDropdown(false)}
+                      className="block w-full px-4 py-3 text-left text-xs uppercase tracking-widest text-neutral-400 transition-colors hover:bg-neutral-800/50 hover:text-white"
+                    >
+                      Admin Products
+                    </Link>
+                    <Link
+                      to="/admin/orders"
+                      onClick={() => setShowDropdown(false)}
+                      className="block w-full px-4 py-3 text-left text-xs uppercase tracking-widest text-neutral-400 transition-colors hover:bg-neutral-800/50 hover:text-white"
+                    >
+                      Admin Orders
+                    </Link>
+                  </>
+                )}
                 <button
                   onClick={handleSignOut}
                   className="w-full text-left px-4 py-3 text-xs uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors"

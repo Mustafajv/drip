@@ -1,83 +1,120 @@
-import { products } from '@/data/products';
-import type { Product, ProductFilters, Order, OrderData, CartItem } from '@/types';
+import type { Product, ProductFilters, Order, OrderData, CartItem, AdminOrder, OrderStatus } from '@/types';
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/api' : '/api';
 
-export async function getProducts(filters?: Partial<ProductFilters>): Promise<Product[]> {
-  await delay(300);
+async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  });
 
-  let filtered = [...products];
-
-  if (filters) {
-    if (filters.categories && filters.categories.length > 0) {
-      filtered = filtered.filter(p => filters.categories!.includes(p.category));
-    }
-    if (filters.sizes && filters.sizes.length > 0) {
-      filtered = filtered.filter(p => p.sizes.some(s => filters.sizes!.includes(s)));
-    }
-    if (filters.colors && filters.colors.length > 0) {
-      filtered = filtered.filter(p =>
-        p.colors.some(c => filters.colors!.includes(c.name))
-      );
-    }
-    if (filters.maxPrice) {
-      filtered = filtered.filter(p => p.price <= filters.maxPrice!);
-    }
-    if (filters.search) {
-      const search = filters.search.toLowerCase();
-      filtered = filtered.filter(
-        p =>
-          p.name.toLowerCase().includes(search) ||
-          p.description.toLowerCase().includes(search) ||
-          p.tags.some(t => t.toLowerCase().includes(search))
-      );
-    }
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error || `Request failed with status ${response.status}`);
   }
 
-  return filtered;
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return response.json() as Promise<T>;
+}
+
+function createProductParams(filters?: Partial<ProductFilters>) {
+  const params = new URLSearchParams();
+
+  if (filters?.categories?.length) params.set('categories', filters.categories.join(','));
+  if (filters?.sizes?.length) params.set('sizes', filters.sizes.join(','));
+  if (filters?.colors?.length) params.set('colors', filters.colors.join(','));
+  if (filters?.maxPrice) params.set('maxPrice', String(filters.maxPrice));
+  if (filters?.search) params.set('search', filters.search);
+
+  const queryString = params.toString();
+  return queryString ? `?${queryString}` : '';
+}
+
+export async function getProducts(filters?: Partial<ProductFilters>): Promise<Product[]> {
+  return apiRequest<Product[]>(`/products${createProductParams(filters)}`);
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  await delay(200);
-  return products.find(p => p.id === id) ?? null;
+  try {
+    return await apiRequest<Product>(`/products/${id}`);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Product not found')) {
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 export async function getRelatedProducts(productId: string, limit = 3): Promise<Product[]> {
-  await delay(250);
-  const product = products.find(p => p.id === productId);
+  const product = await getProductById(productId);
   if (!product) return [];
+
+  const products = await getProducts();
 
   return products
     .filter(p => p.id !== productId && (p.category === product.category || p.tags.some(t => product.tags.includes(t))))
     .slice(0, limit);
 }
 
+export async function createProduct(productData: Omit<Product, 'id'>): Promise<Product> {
+  return apiRequest<Product>('/admin/products', {
+    method: 'POST',
+    body: JSON.stringify(productData),
+  });
+}
+
+export async function updateProduct(product: Product): Promise<Product> {
+  return apiRequest<Product>(`/admin/products/${product.id}`, {
+    method: 'PUT',
+    body: JSON.stringify(product),
+  });
+}
+
+export async function deleteProduct(productId: string): Promise<string> {
+  await apiRequest<void>(`/admin/products/${productId}`, {
+    method: 'DELETE',
+  });
+
+  return productId;
+}
+
 export async function createOrder(
   orderData: OrderData,
   items: CartItem[]
 ): Promise<Order> {
-  await delay(800);
+  return apiRequest<Order>('/orders', {
+    method: 'POST',
+    body: JSON.stringify({
+      orderData,
+      items: items.map(item => ({
+        productId: item.product.id,
+        selectedSize: item.selectedSize,
+        selectedColor: item.selectedColor,
+        quantity: item.quantity,
+      })),
+    }),
+  });
+}
 
-  const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  const tax = subtotal * 0.2;
-  const total = subtotal + tax;
+export async function getOrders(): Promise<Order[]> {
+  return apiRequest<Order[]>('/orders');
+}
 
-  const order: Order = {
-    id: `ORD-${Date.now()}`,
-    items,
-    shipping: {
-      firstName: orderData.firstName,
-      lastName: orderData.lastName,
-      address: orderData.address,
-      city: orderData.city,
-      postalCode: orderData.postalCode,
-    },
-    subtotal,
-    tax,
-    total,
-    status: 'confirmed',
-    createdAt: new Date().toISOString(),
-  };
+export async function getAdminOrders(): Promise<AdminOrder[]> {
+  return apiRequest<AdminOrder[]>('/admin/orders');
+}
 
-  return order;
+export async function updateAdminOrderStatus(orderId: string, status: OrderStatus): Promise<AdminOrder> {
+  return apiRequest<AdminOrder>(`/admin/orders/${orderId}/status`, {
+    method: 'PUT',
+    body: JSON.stringify({ status }),
+  });
 }

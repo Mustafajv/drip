@@ -7,6 +7,9 @@ import ProductsPage from '@/pages/ProductsPage';
 import ProductDetailPage from '@/pages/ProductDetailPage';
 import CheckoutPage from '@/pages/CheckoutPage';
 import AuthPage from '@/pages/AuthPage';
+import AdminProductsPage from '@/pages/AdminProductsPage';
+import AdminOrdersPage from '@/pages/AdminOrdersPage';
+import AccountPage from '@/pages/AccountPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +41,31 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { data: session, isPending } = useSession();
+
+  if (isPending) {
+    return (
+      <div className="min-h-screen bg-[#131313] flex items-center justify-center">
+        <div className="animate-pulse space-y-4 text-center">
+          <div className="w-48 h-1 bg-neutral-800 mx-auto" />
+          <p className="text-neutral-600 text-xs uppercase tracking-widest">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session?.user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (session.user.role !== 'ADMIN') {
+    return <Navigate to="/account" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -54,6 +82,30 @@ function App() {
               <ProtectedRoute>
                 <CheckoutPage />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <AccountPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminProductsPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <AdminRoute>
+                <AdminOrdersPage />
+              </AdminRoute>
             }
           />
         </Routes>

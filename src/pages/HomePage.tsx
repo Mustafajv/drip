@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
-import { heroImage } from '@/data/products';
+import { featuredCollectionImage, heroImage } from '@/data/products';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { products, featuredCollectionImage } from '@/data/products';
+import { useProducts } from '@/hooks/useProducts';
 
 export default function HomePage() {
-  const featuredProducts = [products[0], products[1], products[2]];
+  const { data: products = [] } = useProducts();
+  const featuredProducts = products.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-[#131313]">
@@ -77,29 +78,30 @@ export default function HomePage() {
             <h3 className="font-headline text-3xl md:text-4xl text-white">Curated Selection</h3>
             <span className="font-label text-xs tracking-widest text-neutral-500">01 / 04</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
-            {/* Large Feature Card */}
-            <Link to={`/products/${featuredProducts[0].id}`} className="md:col-span-8 group cursor-pointer">
-              <div className="aspect-[16/9] overflow-hidden relative mb-6">
-                <img
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  src={featuredCollectionImage}
-                  alt={featuredProducts[0].name}
-                />
-                <div className="absolute inset-0 bg-black/10 transition-opacity group-hover:opacity-0" />
-              </div>
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-headline text-xl md:text-2xl text-white">{featuredProducts[0].name}</h4>
-                  <p className="font-body text-sm text-neutral-500 uppercase tracking-widest mt-1">
-                    {featuredProducts[0].isLimited ? 'Limited Edition' : featuredProducts[0].description}
-                  </p>
+          {featuredProducts.length >= 3 && (
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+              {/* Large Feature Card */}
+              <Link to={`/products/${featuredProducts[0].id}`} className="md:col-span-8 group cursor-pointer">
+                <div className="aspect-[16/9] overflow-hidden relative mb-6">
+                  <img
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    src={featuredCollectionImage}
+                    alt={featuredProducts[0].name}
+                  />
+                  <div className="absolute inset-0 bg-black/10 transition-opacity group-hover:opacity-0" />
                 </div>
-                <span className="font-body text-lg md:text-xl text-white">
-                  ${featuredProducts[0].price.toLocaleString()}
-                </span>
-              </div>
-            </Link>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-headline text-xl md:text-2xl text-white">{featuredProducts[0].name}</h4>
+                    <p className="font-body text-sm text-neutral-500 uppercase tracking-widest mt-1">
+                      {featuredProducts[0].isLimited ? 'Limited Edition' : featuredProducts[0].description}
+                    </p>
+                  </div>
+                  <span className="font-body text-lg md:text-xl text-white">
+                    ${featuredProducts[0].price.toLocaleString()}
+                  </span>
+                </div>
+              </Link>
 
             {/* Small Side Card */}
             <Link
@@ -166,7 +168,8 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-          </div>
+            </div>
+          )}
         </div>
       </section>
 

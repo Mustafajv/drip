@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "db:push": "npx prisma db push",
-    "db:generate": "npx prisma generate"
+    "db:generate": "npx prisma generate",
+    "seed:admin": "tsx server/seed-admin.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useProducts } from '@/hooks/useProducts';
-import { lookbookImage } from '@/data/products';
 
 const categories = ['outerwear', 'knitwear', 'footwear', 'accessories', 'trousers'];
 const sizes = ['XS', 'S', 'M', 'L', 'XL'];

@@ -23,6 +23,17 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface OrderItem {
+  id: string;
+  productId: string;
+  productName: string;
+  productImage: string;
+  selectedSize: string;
+  selectedColor: string;
+  quantity: number;
+  unitPrice: number;
+}
+
 export interface OrderData {
   firstName: string;
   lastName: string;
@@ -38,7 +49,7 @@ export interface OrderData {
 
 export interface Order {
   id: string;
-  items: CartItem[];
+  items: OrderItem[];
   shipping: {
     firstName: string;
     lastName: string;
@@ -51,6 +62,17 @@ export interface Order {
   total: number;
   status: 'confirmed' | 'processing' | 'shipped';
   createdAt: string;
+}
+
+export type OrderStatus = Order['status'];
+
+export interface AdminOrder extends Order {
+  email: string;
+  customer: {
+    id: string;
+    name: string;
+    email: string;
+  };
 }
 
 export interface ProductFilters {

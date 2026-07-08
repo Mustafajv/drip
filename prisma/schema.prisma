@@ -10,6 +10,25 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum ProductCategory {
+  outerwear
+  knitwear
+  footwear
+  accessories
+  trousers
+}
+
+enum OrderStatus {
+  confirmed
+  processing
+  shipped
+}
+
 // ── Better Auth Models ──
 
 model User {
@@ -18,11 +37,13 @@ model User {
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
+  role          UserRole  @default(CUSTOMER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   sessions Session[]
   accounts Account[]
+  orders   Order[]
 }
 
 model Session {
@@ -61,4 +82,56 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model Product {
+  id              String          @id
+  name            String
+  description     String
+  longDescription String
+  price           Int
+  category        ProductCategory
+  sizes           String[]
+  colors          Json
+  images          String[]
+  tags            String[]
+  collection      String
+  materials       String
+  care            String
+  isLimited       Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model Order {
+  id         String      @id
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName  String
+  lastName   String
+  address    String
+  city       String
+  postalCode String
+  email      String
+  subtotal   Int
+  tax        Int
+  total      Int
+  status     OrderStatus @default(confirmed)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id            String @id
+  orderId       String
+  order         Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId     String
+  productName   String
+  productImage  String
+  selectedSize  String
+  selectedColor String
+  quantity      Int
+  unitPrice     Int
 }

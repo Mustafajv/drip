@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCartStore } from '@/stores/cartStore';
 import { createOrder } from '@/services/api';
 import type { Product, OrderData } from '@/types';
@@ -23,7 +23,8 @@ export function useAddToCart() {
 }
 
 export function usePlaceOrder() {
-  const { items, clearCart } = useCartStore.getState();
+  const queryClient = useQueryClient();
+  const { clearCart } = useCartStore.getState();
 
   return useMutation({
     mutationFn: async (orderData: OrderData) => {
@@ -33,6 +34,7 @@ export function usePlaceOrder() {
     },
     onSuccess: () => {
       clearCart();
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 }
