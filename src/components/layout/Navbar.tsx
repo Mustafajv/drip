@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useSession, signOut } from '@/lib/auth-client';
 
@@ -19,6 +20,7 @@ export default function Navbar() {
 
   const { data: session, isPending } = useSession();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -35,18 +37,28 @@ export default function Navbar() {
   const handleSignOut = async () => {
     await signOut();
     setShowDropdown(false);
+    setShowMobileMenu(false);
     navigate('/');
   };
 
   const userInitial = session?.user?.name?.charAt(0).toUpperCase() || '?';
 
   return (
-    <nav className="fixed top-0 w-full z-50 h-20 bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-6 md:px-12 max-w-[1920px] mx-auto left-0 right-0">
+    <nav className="fixed top-0 w-full z-50 h-20 bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-5 md:px-12 max-w-[1920px] mx-auto left-0 right-0">
       {/* Left Nav Links */}
-      <div className="flex gap-4 md:gap-8 items-center">
+      <button
+        type="button"
+        onClick={() => setShowMobileMenu(current => !current)}
+        className="flex h-10 w-10 items-center justify-center text-neutral-400 transition-colors hover:text-white md:hidden"
+        title={showMobileMenu ? 'Close menu' : 'Open menu'}
+      >
+        {showMobileMenu ? <X size={22} /> : <Menu size={22} />}
+      </button>
+
+      <div className="hidden gap-4 md:flex md:gap-8 items-center">
         {navLinks.map(link => {
-          const isActive = location.pathname === link.path ||
-            (link.path === '/products' && location.pathname === '/products');
+          const [path, search = ''] = link.path.split('?');
+          const isActive = location.pathname === path && (!search || location.search === `?${search}`);
           return (
             <Link
               key={link.path}
@@ -66,14 +78,14 @@ export default function Navbar() {
       {/* Center Logo */}
       <Link
         to="/"
-        className="text-3xl font-headline tracking-[0.2em] text-white absolute left-1/2 -translate-x-1/2"
+        className="absolute left-1/2 -translate-x-1/2 text-2xl font-headline tracking-[0.2em] text-white sm:text-3xl"
       >
         DRIP
       </Link>
 
       {/* Right Icons */}
-      <div className="flex gap-4 md:gap-6 items-center">
-        <button className="text-neutral-400 hover:text-white transition-all duration-500 active:opacity-80">
+      <div className="flex gap-3 md:gap-6 items-center">
+        <button className="hidden text-neutral-400 hover:text-white transition-all duration-500 active:opacity-80 md:block">
           <span className="material-symbols-outlined">search</span>
         </button>
 
@@ -168,6 +180,30 @@ export default function Navbar() {
           )}
         </button>
       </div>
+
+      {showMobileMenu && (
+        <div className="absolute left-0 right-0 top-20 border-t border-neutral-900 bg-neutral-950/95 px-5 py-5 shadow-2xl backdrop-blur-xl md:hidden">
+          <div className="grid gap-1">
+            {navLinks.map(link => {
+              const [path, search = ''] = link.path.split('?');
+              const isActive = location.pathname === path && (!search || location.search === `?${search}`);
+
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setShowMobileMenu(false)}
+                  className={`px-1 py-4 font-sans text-xs uppercase tracking-widest transition-colors ${
+                    isActive ? 'text-white' : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
