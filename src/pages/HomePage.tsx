@@ -13,10 +13,15 @@ export default function HomePage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
+      <section className="relative h-[100svh] min-h-[40rem] w-full overflow-hidden flex items-center justify-center md:h-screen">
         <div className="absolute inset-0 z-0">
           <img
-            className="w-full h-full object-cover brightness-[0.4]"
+            className="h-full w-full scale-110 object-cover object-center brightness-[0.2] blur-2xl"
+            src={heroImage}
+            aria-hidden="true"
+          />
+          <img
+            className="absolute inset-0 h-full w-full object-cover object-center brightness-[0.4] md:object-contain md:brightness-[0.55]"
             src={heroImage}
             alt="Editorial fashion photography"
           />
